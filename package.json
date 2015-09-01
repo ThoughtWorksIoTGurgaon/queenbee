@@ -1,0 +1,9 @@
+{
+  "repository": "",
+  "description": "",
+  "license": "MIT",
+
+  "dependencies": {
+    "mqtt": "^1.3.5"
+  }
+}
