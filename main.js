@@ -1,58 +1,114 @@
 var mqtt = require("mqtt");
-var client  = mqtt.connect('mqtt://localhost:1883');
+var client = mqtt.connect('mqtt://localhost:1883');
 
-var device = {};
-var sensors = {};
+var _debug = true;
 
-var dataRegex = /\/data\/(.*)/;
-var messageCallbacks = [];
+function debug(msg) {
+    if(_debug) console.log(msg);
+}
+
+var network = {
+    phy: {},
+
+    link: {}
+};
+
+
+function publish(topic, message) {
+    debug("Publishing data on " + topic + " : " + message);
+    client.publish(topic, message)
+}
+
+var _subscriptions = [];
+function subscribe(regExp, callback) {
+    _subscriptions.push([regExp, callback]);
+}
+
+
+function publishDataForService(serviceAddress, data) {
+    var topic = "/service/" + serviceAddress + "/data";
+    var message = JSON.stringify(data);
+
+    publish(topic, message);
+}
+
+function publishCmdToDevice(deviceId, message) {
+    publish("/device/" + deviceId + "/cmd", message)
+}
 
 
 client.on('connect', function () {
-    client.subscribe("/data/#");
-    client.subscribe("/device/#");
+    client.subscribe("/device/+/data");
+    client.subscribe("/device/+/cmd");
+    client.subscribe("/service/+/cmd");
 
 
-    addMessageCallback(/\/data\//, onData);
+    subscribe(/\/device\/.*\/data/, onDeviceData);
+    subscribe(/\/service\/.*\/cmd/, onServiceCmd);
 });
 
 client.on('message', function (topic, message) {
 
-    messageCallbacks.forEach(function(spec) {
+    var strMessage = message.toString();
+    debug("Received message " + strMessage + "On topic: " + topic);
+
+    _subscriptions.forEach(function (spec) {
         var regex = spec[0];
         if (regex.test(topic)) {
-            spec[1].call(topic, message);
+            spec[1].call(undefined, topic, strMessage);
         }
     });
-    console.log(message.toString());
+
 });
 
-function addMessageCallback(regExp, callback) {
-    messageCallbacks.push([regExp, callback]);
+function onDeviceData(topic, message) {
+    var deviceId = /device\/(.+?)\/data/.exec(topic)[1];
+
+    var data = JSON.parse(message);
+
+    data.forEach(function (service) {
+        /** @namespace service.sid */
+        var serviceAddress = deviceId + ":" + service.sid;
+
+        //todo: remove once service discovery is played
+        createEntryInNetworkTable(serviceAddress, deviceId, service.sid);
+
+        network.link[serviceAddress].data = service.data;
+
+        publishDataForService(serviceAddress, service.data);
+    });
 }
 
-function onData(topic, message) {
-    message = JSON.parse(message.toString());
+function onServiceCmd(topic, message){
+    var serviceAddress = /service\/(.+?)\/cmd/.exec(topic)[1];
+    var deviceId = network.link[serviceAddress].device;
 
-    var result = topic.exec(dataRegex);
-    var deviceId = undefined;
-    if(result) {
-        deviceId = result[1];
-        device[deviceId] = device[deviceId] || {lastMessage: null, messages: []};
+    publishCmdToDevice(deviceId, message);
+}
 
-        device[deviceId].lastMessage = message;
-        device[deviceId].messages.push(message);
+function createEntryInNetworkTable(serviceAddress, deviceId, serviceId) {
+    if (!network.link[serviceAddress]) {
+        network.link[serviceAddress] = {
+            device: deviceId,
+            service: serviceId
+        }
+    }
 
-        message.data.forEach(function(sensorData) {
-            var currentTime = Date.now();
+    if (!network.phy[deviceId]) {
+        network.phy[deviceId] = {
+            device: deviceId,
+            services: [{
+                sid: serviceId
+            }]
+        }
+    }
 
-            var sensorObj = sensors[sensorData['id']] || {value: null, updateAt: null, history: {}};
-            sensorObj.value = sensorData['value'];
-            sensorObj.updatedAt = currentTime;
+    var found = true;
+    network.phy[deviceId].services.forEach(function(servDesc) {
+        found = servDesc.sid == serviceId
+    });
 
-            sensorObj.history[currentTime.toString()] = value;
-
-            sensors[sensorData['id']] = sensorObj;
-        });
+    if(!found) {
+        network.phy[deviceId].services.push({sid: serviceId});
     }
 }
