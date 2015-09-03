@@ -27,8 +27,6 @@ function subscribe(regExp, callback) {
 
 function publishDataForService(serviceAddress, data) {
     var topic = "/service/" + serviceAddress + "/data";
-    var message = JSON.stringify(data);
-
     publish(topic, message);
 }
 
