@@ -1,5 +1,5 @@
 var mqtt = require("mqtt");
-var client = mqtt.connect('mqtt://192.168.43.11:1883');
+var client = mqtt.connect('mqtt://192.168.1.2:1883');
 
 var _debug = true;
 
@@ -10,7 +10,7 @@ function debug(msg) {
 var network = {
     phy: {},
 
-    link: {}
+    link: { "my-device-id:0": {"device": "my-device-id", "service": 0 }}
 };
 
 
@@ -83,6 +83,8 @@ function onServiceCmd(topic, message){
     var deviceId = network.link[serviceAddress].device;
     var serviceId = network.link[serviceAddress].service;
 
+    console.log(">>>"+message);
+    message = JSON.parse(message);
     var cmd = message.data == "on" ? 1 : 0;
 
     publishCmdToDevice(deviceId, serviceId, cmd);
@@ -195,8 +197,8 @@ function parsePacket(packet) {
         var packet = new Buffer([1, 1, 0, 4, 0, 1, 2, 1, 0]);
         onDeviceData("/device/my-device-id/data", packet);
 
-        assert.equal(publishedMessages[0][0], "/service/abc:2/data");
-        assert.deepEqual(publishedMessages[0][1], {serviceAddress: 'abc:2', data: "off"});
+        assert.equal(publishedMessages[0][0], "/service/my-device-id:2/data");
+        assert.deepEqual(publishedMessages[0][1], {serviceAddress: 'my-device-id:2', data: "off"});
 
         this.publish = publish_old;
     })(this);
@@ -210,11 +212,16 @@ function parsePacket(packet) {
             publishedMessages.push([topic, data]);
         };
 
-        onServiceCmd("/service/abc:2/cmd", {serviceAddress: 'abc:2', data: "off"});
-        var packet = new Buffer([1, 1, 0, 4, 0, 1, 2, 1, 0]);
+        onServiceCmd("/service/my-device-id:2/cmd", JSON.stringify({serviceAddress: 'my-device-id:2', data: "off"}));
+        onServiceCmd("/service/my-device-id:2/cmd", JSON.stringify({serviceAddress: 'my-device-id:2', data: "on"}));
+        var packetOff = new Buffer([1, 1, 0, 4, 0, 1, 2, 1, 0]);
+        var packetOn = new Buffer([1, 1, 0, 4, 0, 1, 2, 1, 1]);
 
-        assert.equal(publishedMessages[0][0], "/device/abc/cmd");
-        assert.deepEqual(publishedMessages[0][1], packet);
+        assert.equal(publishedMessages[0][0], "/device/my-device-id/cmd");
+        assert.deepEqual(publishedMessages[0][1], packetOff);
+
+        assert.equal(publishedMessages[1][0], "/device/my-device-id/cmd");
+        assert.deepEqual(publishedMessages[1][1], packetOn);
 
         this.publish = publish_old;
     })(this);
