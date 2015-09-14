@@ -1,5 +1,5 @@
 var mqtt = require("mqtt");
-var client = mqtt.connect('mqtt://192.168.1.2:1883');
+var client = mqtt.connect('mqtt://localhost:1883');
 
 var _debug = true;
 
@@ -10,7 +10,10 @@ function debug(msg) {
 var network = {
     phy: {},
 
-    link: { "my-device-id:0": {"device": "my-device-id", "service": 0 }}
+    link: {
+        "my-device-id:0": {"device": "my-device-id", "service": 2 },
+        "sdFGHDjv7w6fdsF:0": {"device": "sdFGHDjv7w6fdsF", "service": 0 }
+    }
 };
 
 
