@@ -11,7 +11,7 @@ SwitchService.prototype.readServiceCmdMessage = function(message) {
 
 SwitchService.prototype.readDeviceStatusDataMessage = function(message) {
     var data = message == "1" ? "on" : "off";
-    return JSON.stringify({servicAddress : this.serviceAddress, data : data});
+    return JSON.stringify({serviceAddress : this.serviceAddress, data : data});
 };
 
 module.exports = SwitchService;

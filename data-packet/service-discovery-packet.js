@@ -9,14 +9,14 @@ function SeriveDiscoveryPacket(callback) {
 SeriveDiscoveryPacket.prototype.readResponse = function(deviceId, supportedServicesPacket) {
     var services = []
         , servicesCount = supportedServicesPacket[5]
-        , serivesPacket = supportedServicesPacket.slice(6);
+        , servicesPacket = supportedServicesPacket.slice(6);
 
     for (var i = 0; i < servicesCount; i++) {
-        var serviceId = serivesPacket[i*2]
-            , serviceProfileId = serivesPacket[i*2 + 1];
+        var serviceId = servicesPacket[i*2]
+            , serviceProfileId = servicesPacket[i*2 + 1];
 
         services.push(new SwitchService(deviceId, serviceId));
-    };
+    }
 
     return this.callback(services);
 };
@@ -27,7 +27,7 @@ module.exports = SeriveDiscoveryPacket;
     var assert = require("assert");
 	
     (function(){
-        console.log("Should parse a service discovery data/response packet with single service")
+        console.log("Should parse a service discovery data/response packet with single service");
         var deviceId = "my-device-id";
         var serviceId = 2;
         var serviceProfileId = 1;
@@ -43,7 +43,7 @@ module.exports = SeriveDiscoveryPacket;
     })();
 
     (function(){
-        console.log("Should parse a service discovery data/response packet with two services")
+        console.log("Should parse a service discovery data/response packet with two services");
         var deviceId = "my-device-id";
         var serviceIdOne = 2;
         var serviceProfileIdOne = 1;

@@ -15,7 +15,7 @@ ActionPacket.prototype.addServiceCmd = function(serviceId, data) {
 	this.services.push({id: serviceId, data: data});
 
 	return this;
-}
+};
 
 ActionPacket.prototype.createPacket = function() {
 	var serviceCmdsPackets = this.services.map(function(service){
@@ -33,7 +33,7 @@ module.exports = ActionPacket;
     var assert = require("assert");
 	
     (function(){
-        console.log("Should create a command packet for a single service")
+        console.log("Should create a command packet for a single service");
         var data = "1"
         	, serviceId = 5;
 
@@ -47,7 +47,7 @@ module.exports = ActionPacket;
     })();
 
     (function(){
-        console.log("Should create a command packet for two services")
+        console.log("Should create a command packet for two services");
         var dataOne = "1"
         	, serviceIdOne = 5
         	, dataTwo = "23"

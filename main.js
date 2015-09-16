@@ -1,4 +1,4 @@
-var queen = new (require("./queen"))();
+var queen = new (require("./queen"))("mqtt://localhost:1883");
 
 var deviceResponse = new (require("./device-response"))();
 
@@ -15,10 +15,10 @@ deviceResponse
             function(supportedServices){
                 for (var i = supportedServices.length - 1; i >= 0; i--) {
                     queen.network[supportedServices[i].serivceAddress] = supportedServices[i];
-                };
+                }
 
                 console.log("After adding services of device id: " + deviceId + " network look like: ");
-                console.log(network);
+                console.log(queen.network);
             }
         )
     )
@@ -26,10 +26,10 @@ deviceResponse
         new ServiceStatusResponse(
             function(deviceId, serviceId, statusData){
                 var service = queen.getService(deviceId, serviceId)
-                    , sericeStatusJson = 
+                    , serviceStatusJson =
                         service.readDeviceStatusDataMessage(statusData);
 
-                queen.publish("/service/" + service.serivceAddress + "/data", sericeStatusJson);
+                queen.publish("/service/" + service.serivceAddress + "/data", serviceStatusJson);
             }
         )
     );

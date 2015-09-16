@@ -1,5 +1,3 @@
-var SwitchService = require("../switch-service");
-
 function ServiceStatusPacket(callback) {
 	this.version = 1;
 	this.type = 1;
@@ -20,7 +18,7 @@ module.exports = ServiceStatusPacket;
     var assert = require("assert");
 
     (function(){
-        console.log("Should read status response packet of a service and call callback with its status.")
+        console.log("Should read status response packet of a service and call callback with its status.");
 
         var deviceId = "my-device-id";
         var serviceId = 2;

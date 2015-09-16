@@ -21,7 +21,7 @@ module.exports = SeriveDiscoveryPacket;
 	var assert = require("assert");
 
     (function(){
-        console.log("Should create a service discovery packet to query device for its supported services.")
+        console.log("Should create a service discovery packet to query device for its supported services.");
 
         var expectedPacket = new Buffer([1, 2, 0, 0, 0]);
         var packet = new SeriveDiscoveryPacket().createPacket();
