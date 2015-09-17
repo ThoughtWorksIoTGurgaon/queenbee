@@ -11,7 +11,7 @@ function SeriveDiscoveryPacket() {
         ];
 }
 
-SeriveDiscoveryPacket.prototype.createPacket = function() {
+SeriveDiscoveryPacket.prototype.emitPacketForChar = function() {
 	return new Buffer(this.packetHeader);
 };
 
@@ -24,7 +24,7 @@ module.exports = SeriveDiscoveryPacket;
         console.log("Should create a service discovery packet to query device for its supported services.");
 
         var expectedPacket = new Buffer([1, 2, 0, 0, 0]);
-        var packet = new SeriveDiscoveryPacket().createPacket();
+        var packet = new SeriveDiscoveryPacket().emitPacketForChar();
 
         assert.equal(packet.toString(),expectedPacket.toString())
     })();

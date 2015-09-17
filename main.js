@@ -51,14 +51,14 @@ function onServiceCmd(topic, message){
                     service.serviceId, 
                     service.readServiceCmdMessage(message)
                 )
-                .createPacket();
+                .emitPacketForChar();
 
     queen.publish("/device/" + service.deviceId + "/cmd", packet)
 }
 
 queen.onConnect(function () {
     // discover all services of "my-device-id"
-    queen.publish("/device/" + deviceId + "/cmd", new ServiceDiscoveryRequest().createPacket());
+    queen.publish("/device/" + deviceId + "/cmd", new ServiceDiscoveryRequest().emitPacketForChar());
 
     queen.subscribe(
         "/device/+/data", 

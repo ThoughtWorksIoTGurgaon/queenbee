@@ -17,7 +17,7 @@ ActionPacket.prototype.addServiceCmd = function(serviceId, data) {
 	return this;
 };
 
-ActionPacket.prototype.createPacket = function() {
+ActionPacket.prototype.emitPacketForChar = function() {
 	var serviceCmdsPackets = this.services.map(function(service){
 		  return [service.id, service.data.length, service.data];
 	   })
@@ -41,7 +41,7 @@ module.exports = ActionPacket;
         var packet = 
         	new ActionPacket()
         		.addServiceCmd(serviceId, data)
-        		.createPacket();
+        		.emitPacketForChar();
 
         assert.equal(packet.toString(),expectedPacket.toString())
     })();
@@ -58,7 +58,7 @@ module.exports = ActionPacket;
         	new ActionPacket()
                 .addServiceCmd(serviceIdOne, dataOne)
         		.addServiceCmd(serviceIdTwo, dataTwo)
-        		.createPacket();
+        		.emitPacketForChar();
 
         assert.equal(packet.toString(),expectedPacket.toString())
     })();
