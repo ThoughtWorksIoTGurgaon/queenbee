@@ -8,7 +8,7 @@ function Queen(brokerAddress) {
 
     _client.on('message', function (topic, message) {
         var strMessage = message.toString();
-        debug("Received message: " + strMessage + " on topic: " + topic);
+        debug("Received message: " + new Buffer(strMessage) + " on topic: " + topic);
 
         _subscriptions.forEach(function (spec) {
             var regex = spec[0];
@@ -33,10 +33,11 @@ function Queen(brokerAddress) {
             _client.on('connect', callback);
         },
         getService : function(deviceId, serviceId) {
-            if (!serviceId) return _network[deviceId];
+            if (serviceId === undefined) return _network[deviceId];
             return _network[deviceId + ":" + serviceId];
         },
         addService : function(service) {
+            debug("Adding service at : " + service.serviceAddress());
             _network[service.serviceAddress()] = service;
             return this;
         }

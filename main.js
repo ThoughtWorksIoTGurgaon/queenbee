@@ -1,21 +1,21 @@
-var Queen = require("./queen");
+var queen = (require("./queen"))("mqtt://localhost:1883");
 
 var ResponsePacket = require("./device-packets/response-packet");
-var SwitchService = require("./services/switch-service");
-
-var deviceId = "my-device-id"
-    , serviceId = 1
-    , switchService = SwitchService(deviceId, serviceId);
-
-var queen = Queen("mqtt://localhost:1883");
-
-queen.addService(switchService);
+var DeviceService = require("./services/device-service");
 
 function onDeviceData(topic, packet){
     var deviceId = /device\/(.+?)\/data/.exec(topic)[1]
-        , responsePacket = ResponsePacket(packet)
-        , service = queen.getService(deviceId, responsePacket.serviceId())
-        , jsonResponse = service.processResponse(responsePacket);
+        , responsePacket = ResponsePacket(new Buffer(packet))
+        , serviceId = responsePacket.serviceId()
+        , service = queen.getService(deviceId, serviceId);
+
+    if (service === undefined){
+        // Device discovery is handled here.
+        queen.addService(DeviceService(deviceId, serviceId, queen));
+        service = queen.getService(deviceId, serviceId);
+    }
+
+    var jsonResponse = service.processResponse(responsePacket);
 
     queen.publish("/service/" + service.serviceAddress() + "/data", jsonResponse);
 }
