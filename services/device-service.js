@@ -1,5 +1,5 @@
 var Service = require("./../service.js");
-var SwitchService = require("./switch-service");
+var serviceFactory = require("../service-factory");
 
 function DeviceService(deviceId, serviceId, queen) {
     var deviceService = {}
@@ -23,7 +23,11 @@ function DeviceService(deviceId, serviceId, queen) {
         servicesBuffer = servicesBuffer.slice(1);
 
         for(var i=0; i< supportedServiceCount; ++i) {
-            _queen.addService(SwitchService(deviceId, servicesBuffer[0]));
+            var serviceId = servicesBuffer[0]
+                , profileId = servicesBuffer.slice(1, 4)
+                , serviceFunction = serviceFactory.getService(profileId);
+
+            _queen.addService(serviceFunction(deviceId, serviceId));
 
             servicesBuffer = servicesBuffer.slice(3);
         }
@@ -75,9 +79,14 @@ module.exports = DeviceService;
         var switchServiceId = 8;
 
         assert.deepEqual(
-            deviceService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 0, 5, 1, switchServiceId, 'S', 'W', 'H'
-            ]))),
+            deviceService.processResponse(ResponsePacket(
+                Buffer.concat([
+                    new Buffer([
+                        1, 4, 0, 0, 0, serviceId, 1, 0, 5, 1, switchServiceId
+                    ])
+                    , new Buffer("SWH")
+                ])
+            )),
             [{response: 'discover-services', data: "service discovery finished"}]
         );
         assert.equal(service.deviceId(), deviceId);
