@@ -1,11 +1,10 @@
 var DevicePacket = require("../device-packet");
 
 function ResponsePacket(packet) {
-    var responsePacket = {};
+    var responsePacket = {}
+        , _charsData = {};
 
     responsePacket.__proto__ = DevicePacket();
-
-    responsePacket.charData = {};
 
     (function(packet) {
         var remainingPacket = responsePacket.consumeHeader(packet)
@@ -18,15 +17,23 @@ function ResponsePacket(packet) {
                 , chDataLen = remainingPacket[1]
                 , chData = remainingPacket.slice(2, 2+chDataLen);
 
-            responsePacket.charData[chId] = chData.toString();
+            _charsData[chId] = chData;
             remainingPacket = remainingPacket.slice(2 + chDataLen);
         }
 
         return remainingPacket;
     })(packet);
 
+    responsePacket.charData = function (charId) {
+        return _charsData[charId];
+    };
+
+    responsePacket.charsData = function () {return _charsData};
+
     return responsePacket;
 }
+
+module.exports = ResponsePacket;
 
 (function(){
     var assert = require("assert");
@@ -43,7 +50,7 @@ function ResponsePacket(packet) {
             ]);
         var responsePacket = ResponsePacket(packet);
 
-        assert.deepEqual(responsePacket.charData[chId], chData);
+        assert.deepEqual(responsePacket.charData(chId), new Buffer(chData));
     })();
 
     (function(){
@@ -60,8 +67,8 @@ function ResponsePacket(packet) {
             ]);
         var responsePacket = ResponsePacket(packet);
 
-        assert.deepEqual(responsePacket.charData[chIdOne], chDataOne);
-        assert.deepEqual(responsePacket.charData[chIdTwo], chDataTwo);
+        assert.deepEqual(responsePacket.charData(chIdOne), new Buffer(chDataOne));
+        assert.deepEqual(responsePacket.charData(chIdTwo), new Buffer(chDataTwo));
     })();
 
 })(this);

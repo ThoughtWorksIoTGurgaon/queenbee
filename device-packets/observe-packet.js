@@ -16,6 +16,8 @@ function ObservePacket(serviceId) {
     return observePacket;
 }
 
+module.exports = ObservePacket;
+
 (function(){
     var assert = require("assert");
 

@@ -16,6 +16,8 @@ function AckPacket(serviceId) {
     return ackPacket;
 }
 
+module.exports = AckPacket;
+
 (function(){
     var assert = require("assert");
 

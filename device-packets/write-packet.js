@@ -7,21 +7,26 @@ function WritePacket(serviceId) {
 
     writePacket.emitPacketForChar = function(chDataInfos) {
         var chDataPackets = chDataInfos.map(function(chInfo) {
-                return [chInfo.id, chInfo.data.length, chInfo.data];
+                return Buffer.concat([
+                    new Buffer([chInfo.id, chInfo.data.length])
+                    , new Buffer(chInfo.data)
+                ]);
             })
             , chDataFlattened = chDataPackets.reduce(function(a, b){
-                return a.concat(b);
+                return Buffer.concat([a, b]);
             });
 
         return Buffer.concat([
             writePacket.emitHeader()
             , new Buffer([chDataPackets.length])
-            , new Buffer(chDataFlattened)
+            , chDataFlattened
         ]);
     };
 
     return writePacket;
 }
+
+module.exports = WritePacket;
 
 (function(){
     var assert = require("assert");
@@ -31,7 +36,10 @@ function WritePacket(serviceId) {
 
         var serviceId = 3;
         var chId = 10, chData = "hello";
-        var expectedPacket = new Buffer([1, 2, 0, 0, 0, serviceId, 1, chId, chData.length, chData]);
+        var expectedPacket = Buffer.concat([
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, chId, chData.length])
+            , new Buffer(chData)
+        ]);
         var packet = WritePacket(serviceId).emitPacketForChar([{id: chId, data: chData}]);
 
         assert.deepEqual(packet, expectedPacket);
@@ -43,9 +51,10 @@ function WritePacket(serviceId) {
         var serviceId = 3;
         var chIdOne = 10, chDataOne = "hello";
         var chIdTwo = 10, chDataTwo = "helloooo";
-        var expectedPacket = new Buffer([1, 2, 0, 0, 0, serviceId, 2,
-            chIdOne, chDataOne.length, chDataOne,
-            chIdTwo, chDataTwo.length, chDataTwo
+        var expectedPacket = Buffer.concat([
+            new Buffer([1, 2, 0, 0, 0, serviceId, 2])
+            , new Buffer([chIdOne, chDataOne.length]), new Buffer(chDataOne)
+            , new Buffer([chIdTwo, chDataTwo.length]), new Buffer(chDataTwo)
         ]);
         var packet = WritePacket(serviceId).emitPacketForChar([
             {id: chIdOne, data: chDataOne},

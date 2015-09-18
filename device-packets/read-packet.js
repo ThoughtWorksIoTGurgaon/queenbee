@@ -16,6 +16,8 @@ function ReadPacket(serviceId) {
     return readPacket;
 }
 
+module.exports = ReadPacket;
+
 (function(){
     var assert = require("assert");
 
