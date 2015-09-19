@@ -66,6 +66,12 @@ function SwitchService(deviceId, serviceId) {
                     , packetData :[_characteristics['toggle-period']]
                 }
             }
+            , 'read-everything' : function () {
+                return {
+                    packetType : 'read'
+                    , packetData :[]
+                }
+            }
             , 'observe-status' : function () {
                 return {
                     packetType : 'observe'
@@ -156,6 +162,15 @@ module.exports = SwitchService;
                 {request: 'toggle-period', data: 12}
             )),
             new Buffer([1, 2, 0, 0, 0, serviceId, 1, 2, 1, 12])
+        );
+    })();
+    (function(){
+        console.log("Should process read-everything json message.");
+        assert.deepEqual(
+            switchService.processRequest(JSON.stringify(
+                {request: 'read-everything', data: 12}
+            )),
+            new Buffer([1, 1, 0, 0, 0, serviceId, 0])
         );
     })();
     (function(){
