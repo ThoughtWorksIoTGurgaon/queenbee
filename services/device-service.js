@@ -18,23 +18,32 @@ function DeviceService(deviceId, serviceId, queen) {
         , _responses = {};
 
     _responses[_characteristics['services']] = function (servicesBuffer) {
-        var supportedServiceCount = servicesBuffer[0];
+        var supportedServiceCount = servicesBuffer[0]
+            , addedServices = [];
 
         servicesBuffer = servicesBuffer.slice(1);
 
         for(var i=0; i< supportedServiceCount; ++i) {
             var serviceId = servicesBuffer[0]
                 , profileId = servicesBuffer.slice(1, 4)
-                , serviceFunction = serviceFactory.getService(profileId);
+                , serviceFunction = serviceFactory.getService(profileId)
+                , service = serviceFunction(deviceId, serviceId);
 
-            _queen.addService(serviceFunction(deviceId, serviceId));
+            addedServices.push(
+                {
+                    serviceAddress : service.serviceAddress()
+                    , profileId : profileId.toString()
+                }
+            );
+
+            _queen.addService(service);
 
             servicesBuffer = servicesBuffer.slice(3);
         }
 
         return {
             response : 'discover-services'
-            , data : "service discovery finished"
+            , data : addedServices
         };
     };
 
@@ -76,7 +85,8 @@ module.exports = DeviceService;
     (function(){
         console.log("Should process discover-services response packet.");
 
-        var switchServiceId = 8;
+        var switchServiceId = 8
+            , profileId = "SWH";
 
         assert.deepEqual(
             deviceService.processResponse(ResponsePacket(
@@ -84,10 +94,18 @@ module.exports = DeviceService;
                     new Buffer([
                         1, 4, 0, 0, 0, serviceId, 1, 0, 5, 1, switchServiceId
                     ])
-                    , new Buffer("SWH")
+                    , new Buffer(profileId)
                 ])
             )),
-            [{response: 'discover-services', data: "service discovery finished"}]
+            [{
+                response: 'discover-services'
+                , data: [
+                    {
+                        serviceAddress: deviceId + ':' + switchServiceId
+                        , profileId: profileId
+                    }
+                ]
+            }]
         );
         assert.equal(service.deviceId(), deviceId);
         assert.equal(service.serviceId(), switchServiceId);
