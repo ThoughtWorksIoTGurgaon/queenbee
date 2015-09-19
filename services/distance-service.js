@@ -19,6 +19,12 @@ function DistanceService(deviceId, serviceId) {
                     , packetData :[_characteristics['unit']]
                 }
             }
+            , 'read-distance-with-unit' : function () {
+                return {
+                    packetType : 'read'
+                    , packetData :[_characteristics['distance'], _characteristics['unit']]
+                }
+            }
             , 'set-unit' : function (unit) {
                 return {
                     packetType : 'write'
@@ -81,6 +87,15 @@ module.exports = DistanceService;
         );
     })();
     (function(){
+        console.log("Should process read distance with unit json message.");
+        assert.deepEqual(
+            distanceService.processRequest(JSON.stringify(
+                {request: 'read-distance-with-unit'}
+            )),
+            new Buffer([1, 1, 0, 0, 0, serviceId, 2, 0, 1])
+        );
+    })();
+    (function(){
         console.log("Should process set unit json message.");
 
         var unit = "cm"
@@ -117,6 +132,22 @@ module.exports = DistanceService;
                 , unitBuffer
              ]))),
             [{response: 'unit', data: 'cm'}]
+        );
+    })();
+    (function(){
+        console.log("Should process distance with unit response packet.");
+        var unit = "cm"
+            , unitBuffer = new Buffer(unit);
+
+        assert.deepEqual(
+            distanceService.processResponse(ResponsePacket(Buffer.concat([
+                new Buffer([1, 4, 0, 0, 0, serviceId, 2, 0, 1, 54, 1, unitBuffer.length])
+                , unitBuffer
+             ]))),
+            [
+                {response: 'distance', data: '54'}
+                , {response: 'unit', data: 'cm'}
+            ]
         );
     })();
 })(this);
