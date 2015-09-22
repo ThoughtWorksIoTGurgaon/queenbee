@@ -11,8 +11,8 @@ function onDeviceData(topic, packet){
 
     if (service === undefined){
         // Device discovery is handled here.
-        queen.addService(DeviceService(deviceId, serviceId, queen));
-        service = queen.getService(deviceId, serviceId);
+        service = DeviceService(deviceId, serviceId, queen);
+        queen.addService(service);
     }
 
     var jsonResponse = service.processResponse(responsePacket);
