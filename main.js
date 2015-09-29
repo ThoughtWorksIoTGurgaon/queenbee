@@ -1,13 +1,23 @@
+var debug = require('debug')('main');
 var queen = (require("./queen"))("mqtt://localhost:1883");
 
 var ResponsePacket = require("./device-packets/response-packet");
 var DeviceService = require("./services/device-service");
 
 function onDeviceData(topic, packet){
+    debug("onDeviceData");
+    debug("topic : " + topic);
+    debug("packet : " + packet);
+
     var deviceId = /device\/(.+?)\/data/.exec(topic)[1]
         , responsePacket = ResponsePacket(new Buffer(packet))
         , serviceId = responsePacket.serviceId()
         , service = queen.getService(deviceId, serviceId);
+
+    debug("Response packet : " + responsePacket);
+    debug("deviceId: " + deviceId);
+    debug("serviceId: " + serviceId);
+    debug("service: " + service);
 
     if (service === undefined){
         // Device discovery is handled here.
@@ -15,9 +25,12 @@ function onDeviceData(topic, packet){
         queen.addService(service);
     }
 
-    var jsonResponse = service.processResponse(responsePacket);
+    var jsonResponse = JSON.stringify(service.processResponse(responsePacket));
 
-    queen.publish("/service/" + service.serviceAddress() + "/data", jsonResponse);
+    debug("serviceAddress: " + service.serviceAddress());
+    debug("json resp : " + jsonResponse);
+
+    queen.publish("/service/"+service.serviceAddress()+"/data", jsonResponse);
 }
 
 function onServiceCmd(topic, message){
