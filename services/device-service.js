@@ -43,7 +43,7 @@ function DeviceService(deviceId, serviceId, queen) {
 
         return {
             response : 'discover-services'
-            , data : addedServices
+            , data : JSON.stringify(addedServices)
         };
     };
 
@@ -99,12 +99,12 @@ module.exports = DeviceService;
             )),
             [{
                 response: 'discover-services'
-                , data: [
+                , data: JSON.stringify([
                     {
                         serviceAddress: deviceId + ':' + switchServiceId
                         , profileId: profileId
                     }
-                ]
+                ])
             }]
         );
         assert.equal(service.deviceId(), deviceId);
