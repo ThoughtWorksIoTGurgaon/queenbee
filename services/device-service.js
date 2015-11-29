@@ -31,7 +31,7 @@ function DeviceService(deviceId, serviceId, queen) {
 
             addedServices.push(
                 {
-                    serviceAddress : service.serviceAddress()
+                    address : service.serviceAddress()
                     , profileId : profileId.toString()
                 }
             );
@@ -101,7 +101,7 @@ module.exports = DeviceService;
                 response: 'discover-services'
                 , data: JSON.stringify([
                     {
-                        serviceAddress: deviceId + ':' + switchServiceId
+                        address: deviceId + ':' + switchServiceId
                         , profileId: profileId
                     }
                 ])

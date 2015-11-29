@@ -39,7 +39,7 @@ function DistanceService(deviceId, serviceId) {
     _responses[_characteristics['distance']] = function (distanceBufer) {
         return {
             response : 'distance'
-            , data : distanceBufer.readUInt8(0)
+            , data : "" + distanceBufer.readUInt8(0)
         };
     };
     _responses[_characteristics['unit']] = function (unitBuffer) {

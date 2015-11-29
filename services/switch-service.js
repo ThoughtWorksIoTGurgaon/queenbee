@@ -96,7 +96,7 @@ function SwitchService(deviceId, serviceId) {
         _responses[_characteristics['toggle-period']] = function (togglePeriodBuffer) {
             return {
                 response : 'toggle-period'
-                , data : togglePeriodBuffer.readUInt8(0)
+                , data : "" + togglePeriodBuffer.readUInt8(0)
             };
         };
 
