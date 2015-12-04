@@ -3,16 +3,16 @@ var Service = require("./../service.js");
 function SwitchService(deviceId, serviceId) {
     var switchService = {}
         , _characteristics = {
-          'switch' : 0
-           , 'toggle' : 1
-           , 'toggle-period' : 2
+          'switch' : 1
+           , 'toggle' : 2
+           , 'toggle-period' : 3
         }
         , _requests = {
             'switch-on' : function () {
                 return {
                     packetType : 'write'
                     , packetData :[
-                        {id : _characteristics['switch'], data : new Buffer([1])}
+                        {id : _characteristics['switch'], data : new Buffer([2])}
                     ]
                 }
             }
@@ -20,7 +20,7 @@ function SwitchService(deviceId, serviceId) {
                 return {
                     packetType : 'write'
                     , packetData :[
-                        {id : _characteristics['switch'], data : new Buffer([0])}
+                        {id : _characteristics['switch'], data : new Buffer([1])}
                     ]
                 }
             }
@@ -84,7 +84,7 @@ function SwitchService(deviceId, serviceId) {
         _responses[_characteristics['switch']] = function (statusBuffer) {
             return {
                 response : 'status'
-                , data : new Buffer([1]).equals(statusBuffer) ? "on" : "off"
+                , data : new Buffer([2]).equals(statusBuffer) ? "on" : "off"
             };
         };
         _responses[_characteristics['toggle']] = function (statusBuffer) {
@@ -125,7 +125,7 @@ module.exports = SwitchService;
             switchService.processRequest(JSON.stringify(
                 {request: 'switch-on'}
             )),
-            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 0, 1, 1])
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 1, 1, 2])
         );
     })();
     (function(){
@@ -134,7 +134,7 @@ module.exports = SwitchService;
             switchService.processRequest(JSON.stringify(
                 {request: 'switch-off'}
             )),
-            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 0, 1, 0])
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 1, 1, 1])
         );
     })();
     (function(){
@@ -143,7 +143,7 @@ module.exports = SwitchService;
             switchService.processRequest(JSON.stringify(
                 {request: 'toggle-on'}
             )),
-            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 1, 1, 1])
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 2, 1, 1])
         );
     })();
     (function(){
@@ -152,7 +152,7 @@ module.exports = SwitchService;
             switchService.processRequest(JSON.stringify(
                 {request: 'toggle-off'}
             )),
-            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 1, 1, 0])
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 2, 1, 0])
         );
     })();
     (function(){
@@ -161,7 +161,7 @@ module.exports = SwitchService;
             switchService.processRequest(JSON.stringify(
                 {request: 'toggle-period', data: 12}
             )),
-            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 2, 1, 12])
+            new Buffer([1, 2, 0, 0, 0, serviceId, 1, 3, 1, 12])
         );
     })();
     (function(){
@@ -177,13 +177,13 @@ module.exports = SwitchService;
         console.log("Should process status response packet.");
         assert.deepEqual(
             switchService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 0, 1, 0
+                1, 4, 0, 0, 0, serviceId, 1, 1, 1, 1
             ]))),
             [{response: 'status', data: 'off'}]
         );
         assert.deepEqual(
             switchService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 0, 1, 1
+                1, 4, 0, 0, 0, serviceId, 1, 1, 1, 2
             ]))),
             [{response: 'status', data: 'on'}]
         );
@@ -192,13 +192,13 @@ module.exports = SwitchService;
         console.log("Should process toggle-enable response packet.");
         assert.deepEqual(
             switchService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 1, 1, 0
+                1, 4, 0, 0, 0, serviceId, 1, 2, 1, 0
             ]))),
             [{response: 'toggle-enabled', data: 'off'}]
         );
         assert.deepEqual(
             switchService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 1, 1, 1
+                1, 4, 0, 0, 0, serviceId, 1, 2, 1, 1
             ]))),
             [{response: 'toggle-enabled', data: 'on'}]
         );
@@ -207,7 +207,7 @@ module.exports = SwitchService;
         console.log("Should process toggle-period response packet.");
         assert.deepEqual(
             switchService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 2, 1, 12
+                1, 4, 0, 0, 0, serviceId, 1, 3, 1, 12
             ]))),
             [{response: 'toggle-period', data: 12}]
         );

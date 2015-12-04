@@ -3,8 +3,8 @@ var Service = require("./../service.js");
 function DistanceService(deviceId, serviceId) {
     var distanceService = {}
         , _characteristics = {
-            'distance' : 0
-            , 'unit' : 1
+            'distance' : 1
+            , 'unit' : 2
         }
         , _requests = {
             'read-distance' : function () {
@@ -37,9 +37,10 @@ function DistanceService(deviceId, serviceId) {
         , _responses = {};
 
     _responses[_characteristics['distance']] = function (distanceBufer) {
+        var distance = distanceBufer.readUInt8(0, true);
         return {
             response : 'distance'
-            , data : "" + distanceBufer.readUInt8(0)
+            , data : "" + (distance === undefined ? 0 : distance)
         };
     };
     _responses[_characteristics['unit']] = function (unitBuffer) {
@@ -74,7 +75,7 @@ module.exports = DistanceService;
             distanceService.processRequest(JSON.stringify(
                 {request: 'read-distance'}
             )),
-            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 0])
+            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 1])
         );
     })();
     (function(){
@@ -83,7 +84,7 @@ module.exports = DistanceService;
             distanceService.processRequest(JSON.stringify(
                 {request: 'read-unit'}
             )),
-            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 1])
+            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 2])
         );
     })();
     (function(){
@@ -92,7 +93,7 @@ module.exports = DistanceService;
             distanceService.processRequest(JSON.stringify(
                 {request: 'read-distance-with-unit'}
             )),
-            new Buffer([1, 1, 0, 0, 0, serviceId, 2, 0, 1])
+            new Buffer([1, 1, 0, 0, 0, serviceId, 2, 1, 2])
         );
     })();
     (function(){
@@ -106,7 +107,7 @@ module.exports = DistanceService;
                 {request: 'set-unit', data: unit}
             )),
             Buffer.concat([
-                new Buffer([1, 2, 0, 0, 0, serviceId, 1, 1, unitBuffer.length])
+                new Buffer([1, 2, 0, 0, 0, serviceId, 1, 2, unitBuffer.length])
                 , unitBuffer
             ])
 
@@ -116,7 +117,7 @@ module.exports = DistanceService;
         console.log("Should process distance response packet.");
         assert.deepEqual(
             distanceService.processResponse(ResponsePacket(new Buffer([
-                1, 4, 0, 0, 0, serviceId, 1, 0, 1, 23
+                1, 4, 0, 0, 0, serviceId, 1, 1, 1, 23
             ]))),
             [{response: 'distance', data: 23}]
         );
@@ -128,7 +129,7 @@ module.exports = DistanceService;
 
         assert.deepEqual(
             distanceService.processResponse(ResponsePacket(Buffer.concat([
-                new Buffer([1, 4, 0, 0, 0, serviceId, 1, 1, unitBuffer.length])
+                new Buffer([1, 4, 0, 0, 0, serviceId, 1, 2, unitBuffer.length])
                 , unitBuffer
              ]))),
             [{response: 'unit', data: 'cm'}]
@@ -141,7 +142,7 @@ module.exports = DistanceService;
 
         assert.deepEqual(
             distanceService.processResponse(ResponsePacket(Buffer.concat([
-                new Buffer([1, 4, 0, 0, 0, serviceId, 2, 0, 1, 54, 1, unitBuffer.length])
+                new Buffer([1, 4, 0, 0, 0, serviceId, 2, 1, 1, 54, 2, unitBuffer.length])
                 , unitBuffer
              ]))),
             [

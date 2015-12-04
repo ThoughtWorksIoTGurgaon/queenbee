@@ -1,3 +1,4 @@
+var debug = require('debug')('DeviceService');
 var Service = require("./../service.js");
 var serviceFactory = require("../service-factory");
 
@@ -5,7 +6,7 @@ function DeviceService(deviceId, serviceId, queen) {
     var deviceService = {}
         , _queen = queen
         , _characteristics = {
-            'services' : 0
+            'services' : 1
         }
         , _requests = {
             'discover-services' : function () {
@@ -21,12 +22,18 @@ function DeviceService(deviceId, serviceId, queen) {
         var supportedServiceCount = servicesBuffer[0]
             , addedServices = [];
 
+        debug("supported service count : " + supportedServiceCount);
+
         servicesBuffer = servicesBuffer.slice(1);
 
         for(var i=0; i< supportedServiceCount; ++i) {
             var serviceId = servicesBuffer[0]
-                , profileId = servicesBuffer.slice(1, 4)
-                , serviceFunction = serviceFactory.getService(profileId)
+                , profileId = servicesBuffer.slice(1, 4);
+
+            debug("serviceId : " + serviceId);
+            debug("profileId : " + profileId);
+
+            var serviceFunction = serviceFactory.getService(profileId)
                 , service = serviceFunction(deviceId, serviceId);
 
             addedServices.push(
@@ -38,7 +45,7 @@ function DeviceService(deviceId, serviceId, queen) {
 
             _queen.addService(service);
 
-            servicesBuffer = servicesBuffer.slice(3);
+            servicesBuffer = servicesBuffer.slice(4);
         }
 
         return {
@@ -79,7 +86,7 @@ module.exports = DeviceService;
             deviceService.processRequest(JSON.stringify(
                 {request: 'discover-services'}
             )),
-            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 0])
+            new Buffer([1, 1, 0, 0, 0, serviceId, 1, 1])
         );
     })();
     (function(){
@@ -92,7 +99,7 @@ module.exports = DeviceService;
             deviceService.processResponse(ResponsePacket(
                 Buffer.concat([
                     new Buffer([
-                        1, 4, 0, 0, 0, serviceId, 1, 0, 5, 1, switchServiceId
+                        1, 4, 0, 0, 0, serviceId, 1, 1, 5, 1, switchServiceId
                     ])
                     , new Buffer(profileId)
                 ])

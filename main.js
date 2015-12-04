@@ -19,18 +19,22 @@ function onDeviceData(topic, packet){
     debug("serviceId: " + serviceId);
     debug("service: " + service);
 
-    if (service === undefined){
+    if (service === undefined && serviceId == 1){
         // Device discovery is handled here.
         service = DeviceService(deviceId, serviceId, queen);
         queen.addService(service);
     }
 
-    var jsonResponse = JSON.stringify(service.processResponse(responsePacket));
+    if (service !== undefined){
+        var jsonResponse = JSON.stringify(service.processResponse(responsePacket));
 
-    debug("serviceAddress: " + service.serviceAddress());
-    debug("json resp : " + jsonResponse);
+        debug("serviceAddress: " + service.serviceAddress());
+        debug("json resp : " + jsonResponse);
 
-    queen.publish("/service/"+service.serviceAddress()+"/data", jsonResponse);
+        queen.publish("/service/"+service.serviceAddress()+"/data", jsonResponse);
+    } else {
+        debug("Got response for unknown service");
+    }
 }
 
 function onServiceCmd(topic, message){
